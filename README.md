@@ -16,8 +16,8 @@
 
 ## Infrasturcture and WebApp repos
 
-[Click here for Infrastructure repo](https://github.com/SaiChandGhanta/2-user-file-hosting-infrastructure)
+[Click here for Infrastructure repo](https://github.com/jayanth-neu/2-user-file-hosting-infrastructure)
 
-[Click here for WebApp repo](https://github.com/SaiChandGhanta/1-user-file-hosting-webapp)
+[Click here for WebApp repo](https://github.com/jayanth-neu/1-user-file-hosting-webapp)
 
 
