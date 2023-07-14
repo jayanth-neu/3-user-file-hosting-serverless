@@ -1,0 +1,54 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: deploy-lambda
+
+env:
+  ARTIFACT_NAME: csye6225-lambda-${{github.sha}}.jar
+  AWS_REGION: us-east-1
+  LAMBDA_FUNCTION_NAME: SendRegistrationMail
+
+on:
+  push:
+    branches: [ main, assignment* ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: deploy-lambda
+
+    steps:
+    - name: checkout repo
+      uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+      #-DskipTests
+    - name: Create lambda artifact
+      run: |
+          pwd
+          mkdir staging && mv target/serverless-*.jar ./${{env.ARTIFACT_NAME}}
+          ls -ltr
+          env
+
+      shell: bash
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+        # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        # if you have/need it
+        aws-region: ${{env.AWS_REGION}}
+
+    - name: copy artifact to s3
+      run: |
+        aws s3 cp ./${{env.ARTIFACT_NAME}} s3://${{ secrets.S3_LAMBDA_BUCKET }}/
+    - name: Update Lambda Function Code
+      run: |
+        aws lambda update-function-code --function-name ${{env.LAMBDA_FUNCTION_NAME}} --s3-bucket ${{ secrets.S3_LAMBDA_BUCKET }} --s3-key ${{env.ARTIFACT_NAME}}
